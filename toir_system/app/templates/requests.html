@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Заявки — ТОИР{% endblock %}
+{% block page_title %}Заявки{% endblock %}
+
+{% block topbar_actions %}
+<button id="btn-create" class="btn btn-primary" onclick="openModal('modal-create')" style="display:none">+ Новая заявка</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <select id="f-status" onchange="loadRequests()">
+      <option value="">Все статусы</option>
+      <option value="new">Новая</option>
+      <option value="assigned">Назначена</option>
+      <option value="in_progress">В работе</option>
+      <option value="diagnostics_done">Диагностика</option>
+      <option value="repair_in_progress">Ремонт</option>
+      <option value="completed">Выполнена</option>
+      <option value="closed">Закрыта</option>
+      <option value="cancelled">Отменена</option>
+    </select>
+    <select id="f-priority" onchange="loadRequests()">
+      <option value="">Все приоритеты</option>
+      <option value="low">Низкий</option>
+      <option value="medium">Средний</option>
+      <option value="high">Высокий</option>
+      <option value="critical">Критический</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>№ заявки</th>
+          <th>Заголовок</th>
+          <th>Оборудование</th>
+          <th>Приоритет</th>
+          <th>Статус</th>
+          <th>Служба</th>
+          <th>Создана</th>
+        </tr>
+      </thead>
+      <tbody id="req-tbody">
+        <tr><td colspan="7" class="loading">Загрузка...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- Modal: Create request -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Новая заявка</span>
+      <button class="modal-close" onclick="closeModal('modal-create')">×</button>
+    </div>
+    <div class="form-group">
+      <label>Заголовок *</label>
+      <input type="text" id="c-title" placeholder="Краткое описание проблемы">
+    </div>
+    <div class="form-group">
+      <label>Описание *</label>
+      <textarea id="c-desc" placeholder="Подробное описание неисправности"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Оборудование *</label>
+        <select id="c-eq"></select>
+      </div>
+      <div class="form-group">
+        <label>Приоритет</label>
+        <select id="c-priority">
+          <option value="low">Низкий</option>
+          <option value="medium" selected>Средний</option>
+          <option value="high">Высокий</option>
+          <option value="critical">Критический</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Тип неисправности</label>
+        <select id="c-fault"><option value="">— не выбрано —</option></select>
+      </div>
+      <div class="form-group">
+        <label>Примечания</label>
+        <input type="text" id="c-notes">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-create')">Отмена</button>
+      <button class="btn btn-primary" id="btn-create-submit" onclick="submitCreate()">Создать</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/requests.js') }}"></script>
+{% endblock %}

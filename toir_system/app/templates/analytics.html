@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Аналитика — ТОИР{% endblock %}
+{% block page_title %}Аналитика{% endblock %}
+
+{% block content %}
+<!-- Summary cards -->
+<div class="stats-grid mb-6" id="summary-cards">
+  <div class="loading" style="grid-column:1/-1">Загрузка...</div>
+</div>
+
+<!-- By status / By priority -->
+<div class="analytics-grid mb-6">
+  <div class="card">
+    <div class="card-title">По статусам</div>
+    <div class="table-wrap"><table><tbody id="by-status-tbody"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-title">По приоритетам</div>
+    <div class="table-wrap"><table><tbody id="by-priority-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<!-- Equipment faults -->
+<div class="card mb-6">
+  <div class="card-title">Неисправности по оборудованию</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Инв. номер</th><th>Оборудование</th><th>Кол-во заявок</th></tr></thead>
+      <tbody id="faults-tbody"><tr><td colspan="3" class="loading">Загрузка...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Service performance (admin/manager only) -->
+<div class="card" id="perf-card" style="display:none">
+  <div class="card-title">Производительность служб</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Служба</th><th>Всего заявок</th><th>Ср. время выполнения (ч)</th></tr></thead>
+      <tbody id="perf-tbody"><tr><td colspan="3" class="loading">Загрузка...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

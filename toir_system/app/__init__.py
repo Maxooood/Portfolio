@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from app.config import config
 from app.extensions import db, migrate, jwt
 from app.logging_config import setup_logging
@@ -21,6 +21,9 @@ def create_app(config_name: str = None) -> Flask:
     from app.api import api_bp
     app.register_blueprint(api_bp)
 
+    from app.web import web_bp
+    app.register_blueprint(web_bp)
+
     @app.errorhandler(404)
     def not_found(e):
         return jsonify({'error': 'Ресурс не найден'}), 404
@@ -36,15 +39,7 @@ def create_app(config_name: str = None) -> Flask:
 
     @app.route('/')
     def index():
-        return jsonify({
-            'status': 'ok',
-            'message': 'TOIR System API',
-            'endpoints': {
-                'health': '/health',
-                'api': '/api',
-                'auth': '/api/auth/login',
-            }
-        }), 200
+        return redirect('/dashboard')
 
     @app.route('/health')
     def health_check():
