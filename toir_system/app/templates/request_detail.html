@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Заявка — ТОИР{% endblock %}
+{% block page_title %}<a href="/requests" style="color:var(--muted);text-decoration:none;font-weight:400;font-size:14px">← Заявки</a>{% endblock %}
+
+{% block content %}
+<div id="req-loading" class="loading">Загрузка...</div>
+<div id="req-body" style="display:none">
+  <!-- Action bar -->
+  <div class="action-bar" id="action-bar"></div>
+
+  <!-- Main info -->
+  <div class="card mb-6">
+    <div class="flex-between mb-4">
+      <div>
+        <code id="r-number" style="font-size:16px;font-weight:700;color:var(--primary)"></code>
+        <span id="r-status" style="margin-left:10px"></span>
+        <span id="r-priority" style="margin-left:6px"></span>
+      </div>
+    </div>
+    <h2 id="r-title" style="font-size:18px;margin-bottom:12px"></h2>
+    <p id="r-desc" style="color:var(--muted);margin-bottom:16px"></p>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Оборудование</div><div class="detail-value" id="r-eq"></div></div>
+      <div class="detail-item"><div class="detail-label">Тип неисправности</div><div class="detail-value" id="r-fault"></div></div>
+      <div class="detail-item"><div class="detail-label">Инициатор</div><div class="detail-value" id="r-init"></div></div>
+      <div class="detail-item"><div class="detail-label">Исполнитель</div><div class="detail-value" id="r-exec"></div></div>
+      <div class="detail-item"><div class="detail-label">Служба</div><div class="detail-value" id="r-svc"></div></div>
+      <div class="detail-item"><div class="detail-label">Примечания</div><div class="detail-value" id="r-notes"></div></div>
+      <div class="detail-item"><div class="detail-label">Создана</div><div class="detail-value" id="r-created"></div></div>
+      <div class="detail-item"><div class="detail-label">Завершена</div><div class="detail-value" id="r-completed"></div></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px" id="detail-cols">
+    <!-- History -->
+    <div class="card">
+      <div class="card-title">История статусов</div>
+      <div class="timeline" id="r-history"></div>
+    </div>
+
+    <!-- Diagnostic -->
+    <div class="card" id="diag-card" style="display:none">
+      <div class="card-title">Диагностика</div>
+      <div id="diag-body"></div>
+    </div>
+  </div>
+
+  <!-- Repair -->
+  <div class="card mb-6" id="repair-card" style="display:none">
+    <div class="card-title">Ремонт</div>
+    <div id="repair-body"></div>
+  </div>
+
+  <!-- Report -->
+  <div class="card" id="report-card" style="display:none">
+    <div class="card-title">Отчёт</div>
+    <div id="report-body"></div>
+  </div>
+</div>
+
+<!-- Modal: Assign -->
+<div class="modal-overlay" id="modal-assign">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Назначить заявку</span><button class="modal-close" onclick="closeModal('modal-assign')">×</button></div>
+    <div class="form-group"><label>Исполнитель</label><select id="a-executor"></select></div>
+    <div class="form-group"><label>Служба</label><select id="a-service"></select></div>
+    <div class="form-group"><label>Комментарий</label><input type="text" id="a-comment"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-assign')">Отмена</button>
+      <button class="btn btn-primary" onclick="doAssign()">Назначить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Diagnostic -->
+<div class="modal-overlay" id="modal-diag">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Добавить диагностику</span><button class="modal-close" onclick="closeModal('modal-diag')">×</button></div>
+    <div class="form-group"><label>Причина неисправности *</label><textarea id="d-cause" placeholder="Опишите причину"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Методы диагностики</label><input type="text" id="d-methods"></div>
+      <div class="form-group"><label>Инструменты</label><input type="text" id="d-tools"></div>
+    </div>
+    <div class="form-group"><label>Примечания</label><input type="text" id="d-notes"></div>
+    <div class="form-group"><label class="checkbox-row"><input type="checkbox" id="d-repair" checked> Требуется ремонт</label></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-diag')">Отмена</button>
+      <button class="btn btn-primary" onclick="doDiag()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Repair -->
+<div class="modal-overlay" id="modal-repair">
+  <div class="modal modal-lg">
+    <div class="modal-header"><span class="modal-title">Добавить ремонт</span><button class="modal-close" onclick="closeModal('modal-repair')">×</button></div>
+    <div class="form-group"><label>Выполненные работы *</label><textarea id="rp-ops" placeholder="Перечислите выполненные операции"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Трудозатраты (ч)</label><input type="number" id="rp-hours" min="0" step="0.5"></div>
+      <div class="form-group"><label>Примечания</label><input type="text" id="rp-notes"></div>
+    </div>
+    <div class="form-group">
+      <div class="flex-between mb-4"><label>Использованные материалы</label><button class="btn btn-secondary btn-sm" onclick="addMatRow()">+ Добавить</button></div>
+      <div id="mat-list"></div>
+    </div>
+    <div class="form-group"><label class="checkbox-row"><input type="checkbox" id="rp-done"> Ремонт завершён</label></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-repair')">Отмена</button>
+      <button class="btn btn-primary" onclick="doRepair()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Report -->
+<div class="modal-overlay" id="modal-report">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Создать отчёт</span><button class="modal-close" onclick="closeModal('modal-report')">×</button></div>
+    <div class="form-group"><label>Краткое резюме *</label><textarea id="rpt-summary"></textarea></div>
+    <div class="form-group"><label>Заключение *</label><textarea id="rpt-conclusion"></textarea></div>
+    <div class="form-group"><label>Рекомендации</label><textarea id="rpt-rec"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-report')">Отмена</button>
+      <button class="btn btn-primary" onclick="doReport()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Status comment -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="ms-title">Изменить статус</span><button class="modal-close" onclick="closeModal('modal-status')">×</button></div>
+    <div class="form-group"><label>Комментарий</label><input type="text" id="ms-comment" placeholder="Необязательно"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-status')">Отмена</button>
+      <button class="btn btn-primary" id="ms-confirm" onclick="">Подтвердить</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>const REQ_ID = {{ req_id }};</script>
+<script src="{{ url_for('static', filename='js/request_detail.js') }}"></script>
+{% endblock %}

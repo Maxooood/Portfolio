@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Пользователи — ТОИР{% endblock %}
+{% block page_title %}Пользователи{% endblock %}
+
+{% block topbar_actions %}
+<button id="btn-add-user" class="btn btn-primary" onclick="openModal('modal-add-user')" style="display:none">+ Добавить</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <select id="f-role" onchange="loadUsers()">
+      <option value="">Все роли</option>
+      <option value="admin">Администратор</option>
+      <option value="manager">Руководитель</option>
+      <option value="dispatcher">Диспетчер</option>
+      <option value="executor">Исполнитель</option>
+      <option value="shift_manager">Нач. смены</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Таб. номер</th>
+          <th>ФИО</th>
+          <th>Email</th>
+          <th>Роль</th>
+          <th>Отдел</th>
+          <th>Телефон</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody">
+        <tr><td colspan="8" class="loading">Загрузка...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add user modal -->
+<div class="modal-overlay" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Новый пользователь</span><button class="modal-close" onclick="closeModal('modal-add-user')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>Таб. номер *</label><input type="text" id="nu-num"></div>
+      <div class="form-group"><label>ФИО *</label><input type="text" id="nu-name"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email *</label><input type="email" id="nu-email"></div>
+      <div class="form-group"><label>Пароль *</label><input type="password" id="nu-pass"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Роль *</label>
+        <select id="nu-role">
+          <option value="executor">Исполнитель</option>
+          <option value="dispatcher">Диспетчер</option>
+          <option value="shift_manager">Нач. смены</option>
+          <option value="manager">Руководитель</option>
+          <option value="admin">Администратор</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Отдел</label><input type="text" id="nu-dept"></div>
+    </div>
+    <div class="form-group"><label>Телефон</label><input type="text" id="nu-phone"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-user')">Отмена</button>
+      <button class="btn btn-primary" onclick="submitUser()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit user modal -->
+<div class="modal-overlay" id="modal-edit-user">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Редактировать пользователя</span><button class="modal-close" onclick="closeModal('modal-edit-user')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>ФИО</label><input type="text" id="eu-name"></div>
+      <div class="form-group"><label>Роль</label>
+        <select id="eu-role">
+          <option value="executor">Исполнитель</option>
+          <option value="dispatcher">Диспетчер</option>
+          <option value="shift_manager">Нач. смены</option>
+          <option value="manager">Руководитель</option>
+          <option value="admin">Администратор</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Отдел</label><input type="text" id="eu-dept"></div>
+      <div class="form-group"><label>Телефон</label><input type="text" id="eu-phone"></div>
+    </div>
+    <div class="form-group"><label>Новый пароль <span class="text-muted">(оставьте пустым, чтобы не менять)</span></label><input type="password" id="eu-pass"></div>
+    <div class="form-group"><label class="checkbox-row"><input type="checkbox" id="eu-active"> Активен</label></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-edit-user')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveUser()">Сохранить</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/users.js') }}"></script>
+{% endblock %}

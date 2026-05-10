@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Оборудование — ТОИР{% endblock %}
+{% block page_title %}Оборудование{% endblock %}
+
+{% block topbar_actions %}
+<button id="btn-add-eq" class="btn btn-primary" onclick="openModal('modal-add-eq')" style="display:none">+ Добавить</button>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filters">
+    <select id="f-status" onchange="loadEquipment()">
+      <option value="">Все статусы</option>
+      <option value="operational">Работает</option>
+      <option value="under_maintenance">Обслуживание</option>
+      <option value="broken">Сломано</option>
+      <option value="decommissioned">Списано</option>
+    </select>
+    <input type="text" id="f-dept" placeholder="Фильтр по отделу" style="width:180px" oninput="filterByDept()">
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Инв. номер</th>
+          <th>Название</th>
+          <th>Тип</th>
+          <th>Отдел</th>
+          <th>Местонахождение</th>
+          <th>Производитель / Модель</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+      <tbody id="eq-tbody">
+        <tr><td colspan="7" class="loading">Загрузка...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="modal-overlay" id="modal-eq-detail">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="eq-detail-title"></span>
+      <button class="modal-close" onclick="closeModal('modal-eq-detail')">×</button>
+    </div>
+    <div id="eq-detail-body"></div>
+    <div id="eq-edit-area" style="display:none">
+      <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+      <div class="form-row">
+        <div class="form-group"><label>Статус</label>
+          <select id="eq-edit-status">
+            <option value="operational">Работает</option>
+            <option value="under_maintenance">Обслуживание</option>
+            <option value="broken">Сломано</option>
+            <option value="decommissioned">Списано</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Местонахождение</label><input type="text" id="eq-edit-loc"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-eq-detail')">Закрыть</button>
+      <button class="btn btn-primary" id="btn-eq-save" onclick="saveEquipment()" style="display:none">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add equipment modal -->
+<div class="modal-overlay" id="modal-add-eq">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Добавить оборудование</span><button class="modal-close" onclick="closeModal('modal-add-eq')">×</button></div>
+    <div class="form-row">
+      <div class="form-group"><label>Название *</label><input type="text" id="ne-name"></div>
+      <div class="form-group"><label>Инв. номер *</label><input type="text" id="ne-inv"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Тип</label><input type="text" id="ne-type"></div>
+      <div class="form-group"><label>Отдел</label><input type="text" id="ne-dept"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Местонахождение</label><input type="text" id="ne-loc"></div>
+      <div class="form-group"><label>Производитель</label><input type="text" id="ne-mfr"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Модель</label><input type="text" id="ne-model"></div>
+      <div class="form-group"><label>Год выпуска</label><input type="number" id="ne-year" min="1900" max="2100"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-add-eq')">Отмена</button>
+      <button class="btn btn-primary" onclick="submitEquipment()">Добавить</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/equipment.js') }}"></script>
+{% endblock %}
