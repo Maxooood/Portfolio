@@ -34,6 +34,18 @@ def create_app(config_name: str = None) -> Flask:
         app.logger.error(f'Internal server error: {e}')
         return jsonify({'error': 'Внутренняя ошибка сервера'}), 500
 
+    @app.route('/')
+    def index():
+        return jsonify({
+            'status': 'ok',
+            'message': 'TOIR System API',
+            'endpoints': {
+                'health': '/health',
+                'api': '/api',
+                'auth': '/api/auth/login',
+            }
+        }), 200
+
     @app.route('/health')
     def health_check():
         return jsonify({'status': 'ok'}), 200
