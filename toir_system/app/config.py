@@ -16,8 +16,9 @@ class Config:
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'TEST_DATABASE_URL', 'postgresql://toir_user:toir_pass@localhost:5432/toir_test_db'
+        'TEST_DATABASE_URL', 'sqlite:///:memory:'
     )
+    SQLALCHEMY_ENGINE_OPTIONS = {'connect_args': {'check_same_thread': False}}
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=5)
 
 
