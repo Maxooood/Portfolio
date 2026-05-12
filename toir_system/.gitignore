@@ -10,3 +10,4 @@ build/
 .pytest_cache/
 instance/
 migrations/versions/
+*.db
