@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: toir_postgres
+    environment:
+      POSTGRES_USER: toir
+      POSTGRES_PASSWORD: toir_pass
+      POSTGRES_DB: toir_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U toir -d toir_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - toir_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: toir_redis
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - toir_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: toir_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://toir:toir_pass@postgres:5432/toir_db
+      SECRET_KEY: ${SECRET_KEY:-production-secret-key-change-this-64chars-minimum-length!!}
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: http://localhost,http://localhost:80,http://frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - toir_net
+
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: toir_celery
+    command: celery -A app.worker.tasks.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://toir:toir_pass@postgres:5432/toir_db
+      SECRET_KEY: ${SECRET_KEY:-production-secret-key-change-this-64chars-minimum-length!!}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - toir_net
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: toir_celery_beat
+    command: celery -A app.worker.tasks.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://toir:toir_pass@postgres:5432/toir_db
+      SECRET_KEY: ${SECRET_KEY:-production-secret-key-change-this-64chars-minimum-length!!}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - celery_worker
+    networks:
+      - toir_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: toir_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - toir_net
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  toir_net:
+    driver: bridge
